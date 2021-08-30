@@ -2,7 +2,7 @@ ifeq ($(GOPATH),)
 GOPATH := $(HOME)/go
 endif
 
-all: gen build
+all: gen test lint vet build
 
 build: server gateway
 
@@ -11,6 +11,15 @@ server:
 	
 gateway:
 	@cd cmd/$@ && go build -o ../../bin/$@ -tags osusergo,netgo
+
+test:
+	@go test ./...
+
+vet:
+	@go vet ./...
+
+lint:
+	@revive ./...
 
 clean:
 	@rm -rf pkg/gwpb

@@ -7,9 +7,10 @@ import (
 	"github.com/borud/gwp/pkg/gwpb"
 )
 
-type Server struct {
-}
+// Server is the server end of the Gateway Protocol
+type Server struct{}
 
+// Connect sets up a bidirectional packet stream
 func (s Server) Connect(srv gwpb.Gateways_ConnectServer) error {
 	ctx := srv.Context()
 
