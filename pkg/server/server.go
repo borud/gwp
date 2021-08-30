@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/borud/gwp/pkg/gwpb"
+	"google.golang.org/protobuf/proto"
 )
 
 // Server is the server end of the Gateway Protocol
@@ -51,6 +52,7 @@ func (s Server) Connect(srv gwpb.Gateways_ConnectServer) error {
 		}
 	}()
 
+	// Receive packets
 	for {
 		// Deal with possible cancelled context first
 		select {
@@ -71,6 +73,8 @@ func (s Server) Connect(srv gwpb.Gateways_ConnectServer) error {
 			continue
 		}
 
-		log.Printf("Packet> %s", packet.String())
+		// Calculate size
+		b, _ := proto.Marshal(packet)
+		log.Printf("SVR [%4d] : %s", len(b), packet.String())
 	}
 }

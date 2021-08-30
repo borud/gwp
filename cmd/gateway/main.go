@@ -11,6 +11,7 @@ import (
 	"github.com/borud/gwp/pkg/gwpb"
 	"github.com/jessevdk/go-flags"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 var opt struct {
@@ -95,6 +96,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("can not receive %v", err)
 		}
-		log.Printf("packet: %s", packet.String())
+		b, _ := proto.Marshal(packet)
+		log.Printf("GW [%4d] : %s", len(b), packet.String())
 	}
 }
