@@ -1,6 +1,8 @@
 # GWP - Gateway Protocol
 
-This is just an exercise in prototyping a simple gateway protocol.
+This is just an exercise in prototyping a simple gateway protocol.  The parts of the code you care about are really in the `proto` directory.
+
+If you want to look at how this ends up looking in Go code you can have a look at the `pkg/server/server.go` and `cmd/gateway/main.go` files.
 
 ## Addressing
 

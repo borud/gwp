@@ -49,7 +49,7 @@ func main() {
 	go func() {
 		for {
 			sender := rand.Intn(100-1) + 1
-			from := &gwpb.Address{NodeId: 1, Addr: &gwpb.Address_B32{B32: uint32(sender)}}
+			from := &gwpb.Address{NodeId: uint64(sender), Addr: &gwpb.Address_B32{B32: uint32(sender)}}
 
 			packet := &gwpb.Packet{
 				Timestamp: uint64(time.Now().UnixMilli()),
@@ -58,13 +58,18 @@ func main() {
 						Samples: []*gwpb.Sample{
 							{
 								From:       from,
-								NodeId:     uint64(sender),
 								Timestamp:  uint64(time.Now().UnixMilli()),
 								SensorType: 1,
 								Value: &gwpb.Value{
-									Value: &gwpb.Value_FloatVal{
-										FloatVal: 3.14,
-									},
+									Value: &gwpb.Value_FloatVal{FloatVal: 3.14},
+								},
+							},
+							{
+								From:       from,
+								Timestamp:  uint64(time.Now().UnixMilli()),
+								SensorType: 99,
+								Value: &gwpb.Value{
+									Value: &gwpb.Value_Int32Val{Int32Val: 314},
 								},
 							},
 						},
@@ -77,7 +82,7 @@ func main() {
 				log.Fatalf("can't send: %v", err)
 			}
 
-			time.Sleep(time.Millisecond * 200)
+			time.Sleep(time.Millisecond * 2000)
 		}
 	}()
 
