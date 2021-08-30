@@ -1,0 +1,136 @@
+// Gateway protocol
+//
+// This is a prototype for gateway protocols that isn't specific to any one project right
+// now.  We try to keep the protocol as minimal as possible.  The goal is to make something
+// that is easy to understand and implement.  Due to different constraints on different
+// platforms, for some platforms it may only be feasible to support a subset of features.
+
+syntax = "proto3";
+package gwpb;
+
+option go_package = "pkg/gwpb";
+
+// Packet represents the top level envelope of the protocol.  If we imagine the
+// TCP/IP protocol stack, you can think of this as the IP header.  The actual 
+// payload of the packet is in the payload field.
+//
+message Packet {
+	// timestamp is in milliseconds since epoch
+	uint64 timestamp = 2;
+
+	// Which device the packet is from.  If the address is unset, the packet is from
+	// the gateway and not directly from a device.  For instance if the gateway 
+	// aggregates data from multiple devices and sends these in a packet, an unset
+	// from address is appropriate as the packet is from the gateway.
+	Address from      = 3;
+
+	// Which device the packet is to.  If the address is unset the addressee
+	// is the gateway itself.
+	Address to        = 4;
+
+	// The payload is always one of the messages.
+	oneof payload {
+		Config     config      = 11;
+		PollConfig poll_config = 12;
+		File       file        = 13;
+		Samples    samples     = 14;
+	}	
+}
+
+// Address is used to represent an address.  Since we might have to deal
+// with multiple technologies we have to be able to represent different
+// kinds of addresses.  ipv4 and ipv6 are pretty self explanatory.  b32 and 
+// b64 is just a generic 32 and 64 bit addresses respectively.
+message Address {
+	// optional node id
+	uint64 node_id = 1;
+
+	// network address
+	oneof addr {
+		// IPv4 address
+		fixed32 ipv4 = 5;
+		// IPv6 address
+		bytes   ipv6 = 6;
+		// Generic 32 bit address
+		fixed32 b32  = 7;
+		// Generic 64 bit address
+		fixed64 b64  = 8;
+		// Indicate that the address is equivalent to a broadcast
+		bool broadcast = 9; 
+	}
+}
+
+// Value is a generic value that can be of various types.
+message Value {
+	oneof value {
+		uint64 uint64_val = 4;
+		uint32 uint32_val = 5;
+		uint64 int64_val  = 6;
+		uint32 int32_val  = 7;
+		float  float_val  = 8;
+		string string_val = 9;
+		bytes  bytes_val  = 10;
+	}
+}
+
+// A sample is a single sensor value from a given node.
+message Sample {
+	Address from        = 1;
+	uint64  node_id     = 2;
+	uint64  timestamp   = 3;
+	uint32  sensor_type = 4;
+	Value   value       = 5;
+}
+
+// Samples is a collection of samples that may or may not come from different devices.  
+// This message is typically sent upstream from the gateway and contains an aggregate 
+// of samples from multiple devices.
+message Samples {
+	repeated Sample samples = 1;
+}
+
+// Config contains configuration data.
+message Config {
+	map<string,Value> config  = 1;
+}
+
+// Ask the device to send its configuration.  Optionally include a
+// list of field names you want to ask for.
+message PollConfig {
+	// The fields we wish to get the value of.  If this array is empty it means
+	// "send all fields"
+	repeated string fields = 1;
+}
+
+// File contains a file or file fragment.
+message File {
+	// File name
+	string name     = 1;
+	// Type is specific to the application
+	uint32 type     = 2;
+	// Version is specific to the application
+	uint32 version  = 3;
+	// Offset is used
+	uint32 offset    = 4;
+	// If the entire file is sent in one go, this is 0.
+	uint32 part_num  = 5;
+	// How many parts the file is divided into
+	uint32 num_parts = 6;
+	// Payload data
+	bytes  data      = 7;
+	// Optional checksum, which is application specific
+	bytes  checksum  = 8;
+	
+}
+
+// Data is a generic data message.  type and id are application specific.
+message Data {
+	uint32 type = 1;
+	uint32 id   = 2;
+	bytes  data = 3;
+}
+
+// gRPC service for handling gateway traffic
+service Gateways {
+	rpc Connect(stream Packet) returns (stream Packet);
+};
