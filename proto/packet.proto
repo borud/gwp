@@ -20,11 +20,22 @@ message Packet {
 	// the gateway and not directly from a device.  For instance if the gateway 
 	// aggregates data from multiple devices and sends these in a packet, an unset
 	// from address is appropriate as the packet is from the gateway.
-	Address from      = 1;
+	Address from = 1;
 
 	// Which device the packet is to.  If the address is unset the addressee
 	// is the gateway itself.
-	Address to        = 2;
+	Address to = 2;
+
+	// This is used when you have request-response semantics.  Use a monotonously
+	// increasing counter and common sense.
+	uint32 id = 3;
+
+	// Which packet id (if any) is this packet a response to.
+	uint32 response_to = 4;
+
+	// Indicate whether we want the other end to acknowledge reception
+	// of this packet.
+	bool require_ack = 5;
 
 	// The payload is always one of the messages.
 	oneof payload {
@@ -59,8 +70,10 @@ message Address {
 		fixed32 b32  = 7;
 		// Generic 64 bit address
 		fixed64 b64  = 8;
+		// String address
+		string name = 9;
 		// Indicate that the address is equivalent to a broadcast
-		bool broadcast = 9; 
+		bool broadcast = 10; 
 	}
 }
 
@@ -133,7 +146,8 @@ message Data {
 	bytes  data = 3;
 }
 
-// gRPC service for handling gateway traffic
-service Gateways {
-	rpc Connect(stream Packet) returns (stream Packet);
-};
+// Ack is just a generic acknowledgement which can optionally contain a status.  The
+// status value is application depenent.
+message Ack {
+	uint32 status = 1;
+}
