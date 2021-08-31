@@ -8,6 +8,10 @@ If you want to look at how this ends up looking in Go code you can have a look a
 
 The addressing within this protocol deals with the address space of network the devices connected to the gateway reside on.  The IP addresses of the gateways belong in the layer above this protocol.
 
-## gRPC interface
+## gRPC interface and binaries
 
-Right now we have a gRPC interface with just one function: `Connect`.  Since we want to be able to run this across whatever connectivity layer we just assume that the transport transports `gwpb.Packet` instances.  So we might as well just do that using gRPC for test purposes.  In other implementations we probably want to use UDP packets.
+There is a `server` and a `gateway` binary that gets built.  These are just examples of the server and the gateway end of the protocol which we can evolve into testing tools.
+
+We currently use gRPC as the transport, but don't get too hung up on that.  We can also use UDP, HTTP, Websockets and whatever other transports to transport the packet instances.  We use a gRPC interface just as a convenience.
+
+*Right now we have a gRPC interface with just one function: `Connect`.  Since we want to be able to run this across whatever connectivity layer we just assume that the transport transports `gwpb.Packet` instances.*

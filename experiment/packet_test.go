@@ -101,6 +101,61 @@ func TestSample(t *testing.T) {
 	log.Printf("%s", p)
 }
 
+// TestSamples exemplifies an aggregate of measurement values from different
+// devices behind the gateway, logging different sensor types, at different
+// times.  This is typical if you have devices that log values at different
+// rates.
+//
+// Note that the decision to aggregate values is a function of the gateway and
+// does not depend on any assumptions in the protocol.  If you have a device
+// that sends a priority message of some sort (fire, door opened etc), you
+// have to make a design choice if you send this in a separate packet with
+// a single Sample payload or if you combine it into a Samples payload which
+// is sent immediately (ie:  send the urgent sample and any packets you have
+// already queued up).
+//
+// One thing you also have to give some thought is the MTU of the transport
+// you are using.  You may need to have some logic in the gateway to gauge
+// how large the packet is going to be and then decide if you are going to
+// send one Samples packet, or multiple Samples packets.
+func TestSamples(t *testing.T) {
+	p := &gwpb.Packet{
+		// From or To not needed since this packet comes from the GW and goes to the server end.
+		Payload: &gwpb.Packet_Samples{
+			Samples: &gwpb.Samples{
+				Samples: []*gwpb.Sample{
+					// Sample from device 1
+					{
+						From:      &gwpb.Address{Addr: &gwpb.Address_B32{B32: 1}},
+						Timestamp: uint64(time.Now().UnixMilli()) - 1000,
+						Type:      1,
+						Value:     &gwpb.Value{Value: &gwpb.Value_FloatVal{FloatVal: 25.5}},
+					},
+
+					// Sample from device 2
+					{
+						From:      &gwpb.Address{Addr: &gwpb.Address_B32{B32: 2}},
+						Timestamp: uint64(time.Now().UnixMilli()) - 1000,
+						Type:      10,
+						Value:     &gwpb.Value{Value: &gwpb.Value_FloatVal{FloatVal: 42.0}},
+					},
+
+					// Sample from device 3
+					{
+						From:      &gwpb.Address{Addr: &gwpb.Address_B32{B32: 3}},
+						Timestamp: uint64(time.Now().UnixMilli()) - 1000,
+						Type:      100,
+						Value:     &gwpb.Value{Value: &gwpb.Value_FloatVal{FloatVal: 1000.1}},
+					},
+				},
+			},
+		},
+	}
+
+	log.Printf("Sample packet: %d", wireSize(p))
+	log.Printf("%s", p)
+}
+
 func wireSize(m proto.Message) int {
 	b, _ := proto.Marshal(m)
 	return len(b)

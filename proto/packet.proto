@@ -40,7 +40,14 @@ message Packet {
 // Address is used to represent an address.  Since we might have to deal
 // with multiple technologies we have to be able to represent different
 // kinds of addresses.  ipv4 and ipv6 are pretty self explanatory.  b32 and 
-// b64 is just a generic 32 and 64 bit addresses respectively.
+// b64 is just a generic 32 and 64 bit addresses respectively.  These can be 
+// used to represent non-IP addresses of different kinds or even node IDs.
+//
+// If the address refers to a node ID the gateway may have to maintain a
+// mapping between the node ID and whatever network address the local
+// network uses.  Keep in mind that the address is supposed to allow the
+// server end to route messages to a given device (or, if the address is
+// the boolean broadcast, all devices reachable from the gateway)
 message Address {
 	// network address
 	oneof addr {
