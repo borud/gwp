@@ -4,9 +4,33 @@ This is just an exercise in prototyping a simple gateway protocol.  The parts of
 
 If you want to look at how this ends up looking in Go code you can have a look at the `pkg/server/server.go` and `cmd/gateway/main.go` files.
 
-## Addressing
+## What problems are we trying to solve?
 
-The addressing within this protocol deals with the address space of network the devices connected to the gateway reside on.  The IP addresses of the gateways belong in the layer above this protocol.
+### Round 1
+
+- We are assuming that we have a set of gateways.
+
+- Behind these gateways are devices that are connected to the gateway
+  in some local network.
+
+- We wish to be able to communicate with these devices through the gateways.
+
+- We don't know how the gateway communicates with the devices - that depends
+  entirely on the nature of the networking technology used between the
+  gateways and the devices.
+
+- Devices behind gateways need some form of persistent address and the gateway
+  must be able to maintan the mapping between the persistent address and the
+  (possibly ephemeral) actual address.
+
+### Round 2
+
+- Given a set of gateways, behind which there is a set of devices, we
+  need a mechanism to determine which gateway(s) can relay messages to
+  a given device.
+
+- For meshed network topologies we must have support for representing the
+  topology so the application can be aware of current topology and compute changes in topology.
 
 ## gRPC interface and binaries
 
