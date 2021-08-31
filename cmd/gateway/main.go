@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"log"
 	"math/rand"
@@ -50,25 +51,24 @@ func main() {
 	go func() {
 		for {
 			sender := rand.Intn(100-1) + 1
-			from := &gwpb.Address{NodeId: uint64(sender), Addr: &gwpb.Address_B32{B32: uint32(sender)}}
+			from := &gwpb.Address{Addr: &gwpb.Address_B32{B32: uint32(sender)}}
 
 			packet := &gwpb.Packet{
-				Timestamp: uint64(time.Now().UnixMilli()),
 				Payload: &gwpb.Packet_Samples{
 					Samples: &gwpb.Samples{
 						Samples: []*gwpb.Sample{
 							{
-								From:       from,
-								Timestamp:  uint64(time.Now().UnixMilli()),
-								SensorType: 1,
+								From:      from,
+								Timestamp: uint64(time.Now().UnixMilli()),
+								Type:      1,
 								Value: &gwpb.Value{
 									Value: &gwpb.Value_FloatVal{FloatVal: 3.14},
 								},
 							},
 							{
-								From:       from,
-								Timestamp:  uint64(time.Now().UnixMilli()),
-								SensorType: 99,
+								From:      from,
+								Timestamp: uint64(time.Now().UnixMilli()),
+								Type:      99,
 								Value: &gwpb.Value{
 									Value: &gwpb.Value_Int32Val{Int32Val: 314},
 								},
@@ -97,6 +97,9 @@ func main() {
 			log.Fatalf("can not receive %v", err)
 		}
 		b, _ := proto.Marshal(packet)
-		log.Printf("GW [%4d] : %s", len(b), packet.String())
+
+		json, _ := json.MarshalIndent(packet, "", "  ")
+
+		log.Printf("GW [%4d] : %s\n\t%s", len(b), packet.String(), json)
 	}
 }

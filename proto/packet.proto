@@ -9,24 +9,22 @@ syntax = "proto3";
 package gwpb;
 
 option go_package = "pkg/gwpb";
+option optimize_for = LITE_RUNTIME;
 
 // Packet represents the top level envelope of the protocol.  If we imagine the
 // TCP/IP protocol stack, you can think of this as the IP header.  The actual 
 // payload of the packet is in the payload field.
 //
 message Packet {
-	// timestamp is in milliseconds since epoch
-	uint64 timestamp = 2;
-
 	// Which device the packet is from.  If the address is unset, the packet is from
 	// the gateway and not directly from a device.  For instance if the gateway 
 	// aggregates data from multiple devices and sends these in a packet, an unset
 	// from address is appropriate as the packet is from the gateway.
-	Address from      = 3;
+	Address from      = 1;
 
 	// Which device the packet is to.  If the address is unset the addressee
 	// is the gateway itself.
-	Address to        = 4;
+	Address to        = 2;
 
 	// The payload is always one of the messages.
 	oneof payload {
@@ -34,7 +32,8 @@ message Packet {
 		PollConfig poll_config = 12;
 		File       file        = 13;
 		Samples    samples     = 14;
-		Data       data        = 15;
+		Sample     sample      = 15;
+		Data       data        = 16;
 	}	
 }
 
@@ -43,9 +42,6 @@ message Packet {
 // kinds of addresses.  ipv4 and ipv6 are pretty self explanatory.  b32 and 
 // b64 is just a generic 32 and 64 bit addresses respectively.
 message Address {
-	// optional node id
-	uint64 node_id = 1;
-
 	// network address
 	oneof addr {
 		// IPv4 address
@@ -76,10 +72,10 @@ message Value {
 
 // A sample is a single sensor value from a given node.
 message Sample {
-	Address from        = 1;
-	uint64  timestamp   = 2;
-	uint32  sensor_type = 3;
-	Value   value       = 4;
+	Address from      = 1;
+	uint64  timestamp = 2;
+	uint32  type      = 3;
+	Value   value     = 4;
 }
 
 // Samples is a collection of samples that may or may not come from different devices.  

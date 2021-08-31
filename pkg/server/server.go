@@ -33,14 +33,8 @@ func (s Server) Connect(srv gwpb.Gateways_ConnectServer) error {
 			}
 
 			err := srv.Send(&gwpb.Packet{
-				Timestamp: 0,
-				From:      &gwpb.Address{},
-				To: &gwpb.Address{
-					NodeId: 0,
-					Addr: &gwpb.Address_B32{
-						B32: 123,
-					},
-				},
+				From:    &gwpb.Address{},
+				To:      &gwpb.Address{Addr: &gwpb.Address_B32{B32: 123}},
 				Payload: payload,
 			})
 			if err != nil {
