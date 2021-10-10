@@ -9,7 +9,7 @@ import (
 
 // Connection represents a Gateway Protocol Connection.
 type Connection interface {
-	Requests() (<-chan Request, error)
+	Requests() <-chan Request
 	Close() error
 }
 

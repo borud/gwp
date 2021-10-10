@@ -1,7 +1,8 @@
-package udp
+package transport
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -31,8 +32,8 @@ const (
 	readTimeout = 500 * time.Millisecond
 )
 
-// Listen creates an UDP listener.
-func Listen(addr string, requestChanLen int) (gwp.Connection, error) {
+// NewUDPListener creates a new UDP listener.
+func NewUDPListener(addr string, requestChanLen int) (gwp.Connection, error) {
 	localAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -60,8 +61,8 @@ func Listen(addr string, requestChanLen int) (gwp.Connection, error) {
 	return listener, nil
 }
 
-// Dial creates a connection to a remote server
-func Dial(addr string, requestChanLen int) (gwp.Connection, error) {
+// NewUDPConnection creates a connection to a remote server.
+func NewUDPConnection(addr string, requestChanLen int) (gwp.ClientConnection, error) {
 	remoteAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -91,11 +92,25 @@ func Dial(addr string, requestChanLen int) (gwp.Connection, error) {
 }
 
 func (u *udpConnection) Send(packet *gwpb.Packet) error {
+	buffer, err := proto.Marshal(packet)
+	if err != nil {
+		return err
+	}
+
+	n, err := u.conn.Write(buffer)
+	if err != nil {
+		return err
+	}
+
+	if n != len(buffer) {
+		return fmt.Errorf("short write: packetSize=%d, written=%d ", len(buffer), n)
+	}
+
 	return nil
 }
 
-func (u *udpConnection) Requests() (<-chan gwp.Request, error) {
-	return u.requestChannel, nil
+func (u *udpConnection) Requests() <-chan gwp.Request {
+	return u.requestChannel
 }
 
 func (u *udpConnection) Close() error {
@@ -114,7 +129,6 @@ func (u *udpConnection) readLoop() {
 	for {
 		select {
 		case <-u.ctx.Done():
-			log.Printf("closing listener to %s", u.addr)
 			return
 		default:
 			// do nothing
