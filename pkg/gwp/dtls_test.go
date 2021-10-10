@@ -1,4 +1,4 @@
-package transport
+package gwp
 
 import (
 	"crypto/tls"

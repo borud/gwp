@@ -1,4 +1,4 @@
-package transport
+package gwp
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 
-	"github.com/borud/gwp/pkg/gwp"
 	"github.com/pion/dtls/v2"
 )
 
@@ -14,7 +13,7 @@ type dtlsListener struct {
 	addr           string
 	listener       net.Listener
 	dtlsConfig     *dtls.Config
-	requestChannel chan gwp.Request
+	requestChannel chan Request
 	ctx            context.Context
 	cancel         context.CancelFunc
 	rwmu           sync.RWMutex
@@ -22,7 +21,7 @@ type dtlsListener struct {
 }
 
 // NewDTLSListener creates a new DTLS listener
-func NewDTLSListener(addr string, dtlsConfig *dtls.Config, requestChanLen int) (gwp.Listener, error) {
+func NewDTLSListener(addr string, dtlsConfig *dtls.Config, requestChanLen int) (Listener, error) {
 	localAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -39,7 +38,7 @@ func NewDTLSListener(addr string, dtlsConfig *dtls.Config, requestChanLen int) (
 		addr:           addr,
 		listener:       conn,
 		dtlsConfig:     dtlsConfig,
-		requestChannel: make(chan gwp.Request),
+		requestChannel: make(chan Request),
 		ctx:            ctx,
 		cancel:         cancel,
 		rwmu:           sync.RWMutex{},
@@ -62,7 +61,7 @@ func (l *dtlsListener) Close() error {
 	return nil
 }
 
-func (l *dtlsListener) Requests() <-chan gwp.Request {
+func (l *dtlsListener) Requests() <-chan Request {
 	return l.requestChannel
 }
 
@@ -86,7 +85,7 @@ func (l *dtlsListener) acceptLoop() {
 		conn := dtlsConnection{
 			addr:           c.RemoteAddr().String(),
 			conn:           c,
-			requestChannel: make(chan gwp.Request),
+			requestChannel: make(chan Request),
 			ctx:            ctx,
 			cancel:         cancel,
 		}

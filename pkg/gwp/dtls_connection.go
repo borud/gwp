@@ -1,4 +1,4 @@
-package transport
+package gwp
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/borud/gwp/pkg/gwp"
 	"github.com/borud/gwp/pkg/gwpb"
 	"github.com/pion/dtls/v2"
 	"google.golang.org/protobuf/proto"
@@ -18,18 +17,19 @@ type dtlsConnection struct {
 	addr           string
 	conn           net.Conn
 	dtlsConfig     *dtls.Config
-	requestChannel chan gwp.Request
+	requestChannel chan Request
 	stopped        sync.WaitGroup
 	ctx            context.Context
 	cancel         context.CancelFunc
 }
 
 const (
-	dtlsReadTimeout = 500 * time.Millisecond
+	dtlsReadTimeout    = 500 * time.Millisecond
+	dtlsReadBufferSize = 1024
 )
 
 // NewDTLSConnection creates a connection to a remote server.
-func NewDTLSConnection(addr string, dtlsConfig *dtls.Config, requestChanLen int) (gwp.Connection, error) {
+func NewDTLSConnection(addr string, dtlsConfig *dtls.Config, requestChanLen int) (Connection, error) {
 	remoteAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewDTLSConnection(addr string, dtlsConfig *dtls.Config, requestChanLen int)
 		addr:           addr,
 		conn:           conn,
 		dtlsConfig:     dtlsConfig,
-		requestChannel: make(chan gwp.Request, requestChanLen),
+		requestChannel: make(chan Request, requestChanLen),
 		stopped:        sync.WaitGroup{},
 		ctx:            ctx,
 		cancel:         cancel,
@@ -58,7 +58,7 @@ func NewDTLSConnection(addr string, dtlsConfig *dtls.Config, requestChanLen int)
 	return connection, nil
 }
 
-func (d *dtlsConnection) Requests() <-chan gwp.Request {
+func (d *dtlsConnection) Requests() <-chan Request {
 	return d.requestChannel
 }
 
@@ -82,7 +82,7 @@ func (d *dtlsConnection) readLoop() {
 	defer d.stopped.Done()
 	defer close(d.requestChannel)
 
-	buffer := make([]byte, readBufferSize)
+	buffer := make([]byte, dtlsReadBufferSize)
 	for {
 		select {
 		case <-d.ctx.Done():
@@ -114,7 +114,7 @@ func (d *dtlsConnection) readLoop() {
 			continue
 		}
 
-		d.requestChannel <- gwp.Request{
+		d.requestChannel <- Request{
 			Peer:       d,
 			RemoteAddr: d.conn.RemoteAddr(),
 			Packet:     &packet,

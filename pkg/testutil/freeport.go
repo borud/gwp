@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"fmt"
 	"net"
 	"testing"
 
@@ -18,4 +19,10 @@ func FreeUDPPort(t *testing.T) int {
 	assert.True(t, ok)
 	assert.Nil(t, lis.Close())
 	return addr.Port
+}
+
+// LocalHostFreeUDPPort returns an addr string for localhost with a
+// random free UDP port.
+func LocalHostFreeUDPPort(t *testing.T) string {
+	return fmt.Sprintf(":%d", FreeUDPPort(t))
 }

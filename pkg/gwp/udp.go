@@ -1,4 +1,4 @@
-package transport
+package gwp
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/borud/gwp/pkg/gwp"
 	"github.com/borud/gwp/pkg/gwpb"
 	"google.golang.org/protobuf/proto"
 )
@@ -15,7 +14,7 @@ import (
 type udpConnection struct {
 	addr           string
 	conn           *net.UDPConn
-	requestChannel chan gwp.Request
+	requestChannel chan Request
 	stopped        sync.WaitGroup
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -32,7 +31,7 @@ const (
 )
 
 // NewUDPListener creates a new UDP listener.
-func NewUDPListener(addr string, requestChanLen int) (gwp.Connection, error) {
+func NewUDPListener(addr string, requestChanLen int) (Listener, error) {
 	localAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -48,7 +47,7 @@ func NewUDPListener(addr string, requestChanLen int) (gwp.Connection, error) {
 	listener := &udpConnection{
 		addr:           addr,
 		conn:           conn,
-		requestChannel: make(chan gwp.Request, requestChanLen),
+		requestChannel: make(chan Request, requestChanLen),
 		ctx:            ctx,
 		cancel:         cancel,
 	}
@@ -61,7 +60,7 @@ func NewUDPListener(addr string, requestChanLen int) (gwp.Connection, error) {
 }
 
 // NewUDPConnection creates a connection to a remote server.
-func NewUDPConnection(addr string, requestChanLen int) (gwp.Connection, error) {
+func NewUDPConnection(addr string, requestChanLen int) (Connection, error) {
 	remoteAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -77,7 +76,7 @@ func NewUDPConnection(addr string, requestChanLen int) (gwp.Connection, error) {
 	connection := &udpConnection{
 		addr:           addr,
 		conn:           conn,
-		requestChannel: make(chan gwp.Request, requestChanLen),
+		requestChannel: make(chan Request, requestChanLen),
 		ctx:            ctx,
 		cancel:         cancel,
 	}
@@ -101,7 +100,7 @@ func (u *udpConnection) Send(packet *gwpb.Packet) error {
 	return err
 }
 
-func (u *udpConnection) Requests() <-chan gwp.Request {
+func (u *udpConnection) Requests() <-chan Request {
 	return u.requestChannel
 }
 
@@ -137,8 +136,8 @@ func (u *udpConnection) readLoop() {
 			continue
 		}
 
-		if n > gwp.MaxPacketSize {
-			log.Printf("UDP listener, oversize packet: remoteAddr=%s, size=%d maxPacketSize=%d", remoteAddr, n, gwp.MaxPacketSize)
+		if n > MaxPacketSize {
+			log.Printf("UDP listener, oversize packet: remoteAddr=%s, size=%d maxPacketSize=%d", remoteAddr, n, MaxPacketSize)
 		}
 
 		packet := gwpb.Packet{}
@@ -150,7 +149,8 @@ func (u *udpConnection) readLoop() {
 		}
 
 		// no timeouts for now
-		u.requestChannel <- gwp.Request{
+		u.requestChannel <- Request{
+			Peer:       u,
 			RemoteAddr: remoteAddr,
 			Packet:     &packet,
 			Timestamp:  time.Now(),
