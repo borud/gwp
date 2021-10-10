@@ -2,7 +2,6 @@ package transport
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -27,9 +26,9 @@ const (
 	// larger than the maximum packet size we want
 	readBufferSize = 1024
 
-	// readTimeout is how long to wait during read.  The practical value of this timeout
+	// udpReadTimeout is how long to wait during read.  The practical value of this timeout
 	// right now is to provide a means for checking if the listener should be shut down.
-	readTimeout = 500 * time.Millisecond
+	udpReadTimeout = 500 * time.Millisecond
 )
 
 // NewUDPListener creates a new UDP listener.
@@ -62,7 +61,7 @@ func NewUDPListener(addr string, requestChanLen int) (gwp.Connection, error) {
 }
 
 // NewUDPConnection creates a connection to a remote server.
-func NewUDPConnection(addr string, requestChanLen int) (gwp.ClientConnection, error) {
+func NewUDPConnection(addr string, requestChanLen int) (gwp.Connection, error) {
 	remoteAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -97,16 +96,9 @@ func (u *udpConnection) Send(packet *gwpb.Packet) error {
 		return err
 	}
 
-	n, err := u.conn.Write(buffer)
-	if err != nil {
-		return err
-	}
+	_, err = u.conn.Write(buffer)
 
-	if n != len(buffer) {
-		return fmt.Errorf("short write: packetSize=%d, written=%d ", len(buffer), n)
-	}
-
-	return nil
+	return err
 }
 
 func (u *udpConnection) Requests() <-chan gwp.Request {
@@ -134,26 +126,26 @@ func (u *udpConnection) readLoop() {
 			// do nothing
 		}
 
-		u.conn.SetReadDeadline(time.Now().Add(readTimeout))
+		u.conn.SetReadDeadline(time.Now().Add(udpReadTimeout))
 		n, remoteAddr, err := u.conn.ReadFrom(buffer)
 		if err, ok := err.(net.Error); ok && err.Timeout() {
 			continue
 		}
 
 		if err != nil {
-			log.Printf("UDP Listener ReadFrom error: %v", err)
+			log.Printf("UDP Listener, ReadFrom error: %v", err)
 			continue
 		}
 
 		if n > gwp.MaxPacketSize {
-			log.Printf("oversize packet: remoteAddr=%s, size=%d maxPacketSize=%d", remoteAddr, n, gwp.MaxPacketSize)
+			log.Printf("UDP listener, oversize packet: remoteAddr=%s, size=%d maxPacketSize=%d", remoteAddr, n, gwp.MaxPacketSize)
 		}
 
 		packet := gwpb.Packet{}
 
 		err = proto.Unmarshal(buffer[:n], &packet)
 		if err != nil {
-			log.Printf("error unmarshalling protobuffer: remoteAddr=%s: %v", remoteAddr.String(), err)
+			log.Printf("UDP listener, error unmarshalling protobuffer: remoteAddr=%s: %v", remoteAddr.String(), err)
 			continue
 		}
 

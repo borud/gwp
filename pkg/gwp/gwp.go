@@ -7,19 +7,28 @@ import (
 	"github.com/borud/gwp/pkg/gwpb"
 )
 
-// Connection represents a Gateway Protocol Connection.
-type Connection interface {
+// Common contains the definition of the functions that are common
+// to both Listener and Connection
+type Common interface {
 	Requests() <-chan Request
 	Close() error
 }
 
-type ClientConnection interface {
+// Listener listens for incoming connections, accepts these and receives
+// data from them.
+type Listener interface {
+	Common
+}
+
+// Connection represent a connection to a peer.
+type Connection interface {
+	Common
 	Send(Packet *gwpb.Packet) error
-	Connection
 }
 
 // Request represents an incoming packet.
 type Request struct {
+	Peer       Connection
 	RemoteAddr net.Addr
 	Packet     *gwpb.Packet
 	Timestamp  time.Time

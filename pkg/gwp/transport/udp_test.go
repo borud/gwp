@@ -2,25 +2,16 @@ package transport
 
 import (
 	"fmt"
-	"net"
 	"testing"
 	"time"
 
 	"github.com/borud/gwp/pkg/gwpb"
+	"github.com/borud/gwp/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUDP(t *testing.T) {
-	lis, err := net.ListenUDP("udp", &net.UDPAddr{
-		IP:   []byte{0, 0, 0, 0},
-		Port: 0,
-	})
-	assert.Nil(t, err)
-	addr, ok := lis.LocalAddr().(*net.UDPAddr)
-	assert.True(t, ok)
-	assert.Nil(t, lis.Close())
-
-	addrStr := fmt.Sprintf(":%d", addr.Port)
+	addrStr := fmt.Sprintf(":%d", testutil.FreeUDPPort(t))
 
 	// Set up listener
 	listener, err := NewUDPListener(addrStr, 1)
@@ -40,12 +31,13 @@ func TestUDP(t *testing.T) {
 	}()
 
 	// fire up client and send messages
-	conn, err := NewUDPConnection(addrStr, 10)
+	conn, err := NewUDPConnection(addrStr, 1)
 	assert.Nil(t, err)
+	assert.NotNil(t, conn)
 
 	go func() {
 		for i := 0; i < numMessages; i++ {
-			conn.Send(&gwpb.Packet{
+			err := conn.Send(&gwpb.Packet{
 				To: &gwpb.Address{
 					Addr: &gwpb.Address_Name{
 						Name: "some name",
@@ -61,6 +53,7 @@ func TestUDP(t *testing.T) {
 					},
 				},
 			})
+			assert.Nil(t, err)
 		}
 		assert.Nil(t, conn.Close())
 	}()
