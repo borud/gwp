@@ -46,15 +46,27 @@ func TestServerAndClient(t *testing.T) {
 
 	numMessages := 5
 
-	var wg sync.WaitGroup
-	wg.Add(numMessages)
+	var messageCountWG sync.WaitGroup
+	var shutdownCallbacksWG sync.WaitGroup
+
+	messageCountWG.Add(numMessages)
 
 	server := &Server{
 		Listeners: []Listener{udpListener},
 		Handler: func(r Request) {
-			wg.Done()
+			messageCountWG.Done()
+		},
+		ShutdownCallbacks: []func(){
+			func() {
+				shutdownCallbacksWG.Done()
+			},
+			func() {
+				shutdownCallbacksWG.Done()
+			},
 		},
 	}
+
+	shutdownCallbacksWG.Add(len(server.ShutdownCallbacks))
 
 	go func() {
 		assert.Nil(t, server.Start())
@@ -84,8 +96,12 @@ func TestServerAndClient(t *testing.T) {
 		})
 	}
 
-	wg.Wait()
+	// will hang here if we don't get all the messages
+	messageCountWG.Wait()
 
 	assert.Nil(t, conn.Close())
 	assert.Nil(t, server.Shutdown())
+
+	// will hang here if all the shutdown callbacks aren't called
+	shutdownCallbacksWG.Wait()
 }

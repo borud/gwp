@@ -5,12 +5,14 @@ import (
 	"log"
 )
 
+// Server is the packet server.  This is vaguely modeled on how
+// the http machinery works in the standard library.
 type Server struct {
 	Listeners         []Listener
 	Handler           Handler
+	ShutdownCallbacks []func()
 	doneChan          chan struct{}
 	shutdown          AtomicBool
-	shutdownCallbacks []func()
 }
 
 var (
@@ -83,8 +85,8 @@ func (s *Server) Shutdown() error {
 
 	close(s.doneChan)
 
-	// Call
-	for _, cb := range s.shutdownCallbacks {
+	// Call the shutdown callbacks
+	for _, cb := range s.ShutdownCallbacks {
 		cb()
 	}
 
