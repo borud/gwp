@@ -21,4 +21,4 @@ func (r *Request) Send(p *gwpb.Packet) error {
 }
 
 // Handler takes care of incoming requests
-type Handler func(r Request)
+type Handler func(r Request) error

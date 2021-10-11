@@ -2,7 +2,8 @@ package gwp
 
 import "sync/atomic"
 
-// AtomicBool is just a helper type that gives us an atomic bool.
+// AtomicBool is just a helper type that gives us an atomic bool. The null
+// value is 0, which means false.
 type AtomicBool int32
 
 // IsTrue is true if it is true :-).

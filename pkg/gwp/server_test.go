@@ -23,8 +23,9 @@ func TestServerSmoke(t *testing.T) {
 	// test with Listeners and Handler
 	server := &Server{
 		Listeners: []Listener{udpListener},
-		Handler: func(r Request) {
+		Handler: func(r Request) error {
 			// do nothing
+			return nil
 		},
 	}
 
@@ -53,8 +54,9 @@ func TestServerAndClient(t *testing.T) {
 
 	server := &Server{
 		Listeners: []Listener{udpListener},
-		Handler: func(r Request) {
+		Handler: func(r Request) error {
 			messageCountWG.Done()
+			return nil
 		},
 		ShutdownCallbacks: []func(){
 			func() {
