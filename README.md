@@ -4,6 +4,28 @@ This is just an exercise in prototyping a simple gateway protocol.  The parts of
 
 If you want to look at how this ends up looking in Go code you can have a look at the `pkg/server/server.go` and `cmd/gateway/main.go` files.
 
+## Before you start
+
+It is assumed that you have Go 1.17 or newer installed.
+
+The project uses generated types that are generated from protobuffer definitions.  We don't check in the generated code, so be aware that
+until you have run code generation, editors will complain about missing
+types.
+
+To install the tooling run:
+
+```shell
+make dep-install
+```
+
+Then run the code-generation with
+
+```shell
+make gen
+```
+
+The code will be regenerated on each build when you just run `make`.  If you add or rename types you may have to do a `make clean` before running `make` to get rid of superfloous files.
+
 ## What problems are we trying to solve?
 
 ### Round 1
