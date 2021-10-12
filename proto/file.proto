@@ -4,23 +4,117 @@ package gwpb;
 option go_package = "pkg/gwpb";
 option optimize_for = LITE_RUNTIME;
 
-// File contains a file or file fragment.
-message File {
-	// File name
-	string name     = 1;
-	// Type is specific to the application
-	uint32 type     = 2;
-	// Version is specific to the application
-	uint32 version  = 3;
-	// Offset is used
-	uint32 offset    = 4;
-	// If the entire file is sent in one go, this is 0.
-	uint32 part_num  = 5;
-	// How many parts the file is divided into
-	uint32 num_parts = 6;
-	// Payload data
-	bytes  data      = 7;
-	// Optional checksum, which is application specific
-	bytes  checksum  = 8;
-	
+// File metadata.
+message FileMeta {
+	// This is the ID assigned to the file by the node or the gateway. We use this to
+	// make delete requests (and later firmware related commands) easier to deal with.
+	uint32 id = 1;
+
+	// Name is the filename.  For now the namespace does not have directories.
+	string name = 2;
+
+	// Application specific file type identifier.
+	uint32 type = 3;
+
+	// Application specific version number
+	uint32 version = 4;
+
+	// Size in bytes
+	uint32 size = 5;
+
+	// Application specific checksum
+	bytes checksum = 6;
+}
+
+// This message signals the creation of a file transfer session.  This will
+// normally be followed by a series of FileChunk messages.
+message FileTransferStart {
+	// File metadata.  At least the size and checksum has to be populated.
+	FileMeta meta = 1;
+
+	// This is the serial number of a file transfer session
+	uint32 session_serial = 2;
+
+	// Number of chunks we divide the file into
+	uint32 numChunks = 3;
+
+	// Windowing parameters.  We still need to figure this out.  Especially
+	// if we are going to support dynamic windowing (and possibly MTU discovery)
+	uint32 window = 4;
+
+	// Reserve some values for windowing parameters.
+	reserved 5,6,7;
+}
+
+// A chunk of data.
+message FileChunk {
+	// Which session this chunk is a part of.
+	uint32 session_serial = 1;
+
+	// Chunk number.  Chunks should be numbered 1 to whatever number of chunks we
+	// wish to send.
+	uint32 chunk_number = 2;
+
+	// Offset into the file.  We could calculate this from file size and the
+	// number of chunks we have announced, but this would not work with
+	// dynamic windowing, so we explicitly include an offset.
+	uint32 offset = 3;
+}
+
+// Acknowledgement for reception of file chunk.
+message FileChunkAck {
+	// Which session this chunk is a part of.
+	uint32 session_serial = 1;
+
+	// List of chunk numbers we are acknowledging
+	repeated uint32 chunk_numbers = 2;
+}
+
+// Signal that a file transfer is terminated or request termination of a file
+// transfer session.
+message FileTransferTermination {
+	// Which session we wish to terminate
+	uint32 session_serial = 1;
+}
+
+// This message is sent by the recipient to signal that we are missing
+// chunks.
+message FileChunksMissing {
+	// Which session this chunk is a part of.
+	uint32 session_serial = 1;
+
+	// The chunk numbers we are missing.
+	repeated uint32 chunk_numbers = 2;
+}
+
+// Ask for a directory.  The response to this is one or more DirEntries
+// messages.
+message DirRequest {
+	// serial number for dir command so we can keep track of
+	// which responses belong to which inquiries.
+	uint32 dir_serial = 1;
+}
+
+// The response to a directory command.
+message DirResponse {
+	// Reference to the the dir command
+	uint32 dir_serial = 1;
+
+	// If true it means that the directory listing is complete.
+	bool complete = 2;
+
+	// A list of file metadata.
+	repeated FileMeta files = 3;
+}
+
+// Request the gateway to delete file
+message DeleteRequest {
+	// The id of the file (as per the directory listing)
+	uint32 id = 1;
+}
+
+// Response that we deleted the file.
+message DeleteResponse {
+	// The id of the file we deleted (as per the directory listing)
+	uint32 id = 1;
 }
