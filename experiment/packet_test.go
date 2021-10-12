@@ -29,7 +29,6 @@ func TestDataPacket(t *testing.T) {
 		Payload: &gwpb.Packet_Data{
 			Data: &gwpb.Data{
 				Type: 1,
-				Id:   1,
 				Data: make([]byte, 50),
 			},
 		},
@@ -73,8 +72,8 @@ func TestConfigPacket(t *testing.T) {
 func TestPollConfig(t *testing.T) {
 	p := &gwpb.Packet{
 		To: &gwpb.Address{Addr: &gwpb.Address_B32{B32: 123}},
-		Payload: &gwpb.Packet_PollConfig{
-			PollConfig: &gwpb.PollConfig{
+		Payload: &gwpb.Packet_ConfigPoll{
+			ConfigPoll: &gwpb.ConfigPoll{
 				Fields: []string{"foo", "bar", "baz", "f1", "f2", "f3", "f4", "f5", "f6", "xxx"},
 			},
 		},

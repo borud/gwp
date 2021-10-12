@@ -1,0 +1,62 @@
+syntax = "proto3";
+package gwpb;
+
+option go_package = "pkg/gwpb";
+option optimize_for = LITE_RUNTIME;
+
+import "common.proto";
+
+
+// A sample is a single sensor value from a given node.
+message Sample {
+	// This is an optional field that is used when you transmit multiple samples
+	// in the Samples message (see below) and they come from different devices.
+	// When sending a single sample the from address should be set in the Packet.
+	Address from      = 1;
+
+	// The timestamp of the sample.  This should should represent the time when a
+	//  measurement was taken at the source.  It is up to the gateway and the node 
+	// to figure out how to set this correctly (for whatever functionally valid
+	// definition of "correctly").
+	uint64  timestamp = 2;
+
+	// The type field contains an application specific identifier of the sensor
+	// or the data channel being reported on.
+	uint32  type      = 3;
+
+	// The value sample value.
+	Value   value     = 4;
+
+	// The serial is used if the node wants an acknowledgement that
+	// the sample has been recorded.
+	uint32 serial = 5;
+
+	// If this is set to true it signals that the recipient must
+	// send an acknowledgement upon reception.
+	bool  want_ack = 6;
+}
+
+// Acknowledge a Sample message
+message SampleAck {
+	// The serial number of the Sample message we are acknowledging.
+	uint32 serial = 1;
+}
+
+// Samples is a collection of samples that may or may not come from different devices.  
+// This message is typically sent upstream from the gateway and contains an aggregate 
+// of samples from multiple devices.
+message Samples {
+	// The timestamp signifying when this message was sent.  Set by the gateway.  Note that
+	// this can be used to figure out the actual time on the gateway since we know when we
+	// received a message (if transport latency permits).
+	uint64 timestamp = 1;
+
+	// A list of samples, possibly from all different nodes, possibly taken at different times.
+	repeated Sample samples = 2;
+}
+
+// Acknowledge a Samples message
+message SamplesAck {
+	// The serial number of the Samples message we are acknowledging.
+	uint32 serial = 1;
+}
