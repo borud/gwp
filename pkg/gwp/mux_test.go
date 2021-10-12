@@ -35,7 +35,6 @@ func TestMux(t *testing.T) {
 			Payload: &gwpb.Packet_Data{
 				Data: &gwpb.Data{
 					Type: 1,
-					Id:   2,
 					Data: []byte{3, 4, 5},
 				},
 			},
@@ -74,10 +73,7 @@ func BenchmarkPayloadTypeName(b *testing.B) {
 				B32: 1234,
 			},
 		},
-		Id:         2,
-		ResponseTo: 1,
-		RequireAck: true,
-		Payload:    &gwpb.Packet_Data{Data: &gwpb.Data{Type: 1, Id: 2, Data: []byte{3, 4, 5}}},
+		Payload: &gwpb.Packet_Data{Data: &gwpb.Data{Type: 1, Data: []byte{3, 4, 5}}},
 	}
 
 	b.ResetTimer()

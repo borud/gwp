@@ -86,12 +86,9 @@ func TestServerAndClient(t *testing.T) {
 					B32: 1234,
 				},
 			},
-			Id:         uint32(i + 1),
-			RequireAck: false,
 			Payload: &gwpb.Packet_Data{
 				Data: &gwpb.Data{
 					Type: 1,
-					Id:   2,
 					Data: []byte{3, 4, 5},
 				},
 			},

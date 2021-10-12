@@ -116,12 +116,9 @@ func TestDTLS(t *testing.T) {
 						Name: "some name",
 					},
 				},
-				Id:         uint32(i + 1),
-				RequireAck: false,
 				Payload: &gwpb.Packet_Data{
 					Data: &gwpb.Data{
 						Type: 1,
-						Id:   1,
 						Data: []byte{1, 2, 3, 4},
 					},
 				},

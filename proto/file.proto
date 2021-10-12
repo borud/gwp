@@ -1,0 +1,26 @@
+syntax = "proto3";
+package gwpb;
+
+option go_package = "pkg/gwpb";
+option optimize_for = LITE_RUNTIME;
+
+// File contains a file or file fragment.
+message File {
+	// File name
+	string name     = 1;
+	// Type is specific to the application
+	uint32 type     = 2;
+	// Version is specific to the application
+	uint32 version  = 3;
+	// Offset is used
+	uint32 offset    = 4;
+	// If the entire file is sent in one go, this is 0.
+	uint32 part_num  = 5;
+	// How many parts the file is divided into
+	uint32 num_parts = 6;
+	// Payload data
+	bytes  data      = 7;
+	// Optional checksum, which is application specific
+	bytes  checksum  = 8;
+	
+}

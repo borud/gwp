@@ -44,13 +44,13 @@ func main() {
 
 	stream, err := client.Connect(context.Background())
 	if err != nil {
-		log.Fatalf("openn stream error %v", err)
+		log.Fatalf("open stream error %v", err)
 	}
 
 	// Sender
 	go func() {
 		for {
-			sender := rand.Intn(100-1) + 1
+			sender := rand.Intn(100000-1000) + 1000
 			from := &gwpb.Address{Addr: &gwpb.Address_B32{B32: uint32(sender)}}
 
 			packet := &gwpb.Packet{

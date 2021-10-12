@@ -11,6 +11,15 @@ package gwpb;
 option go_package = "pkg/gwpb";
 option optimize_for = LITE_RUNTIME;
 
+import "google/protobuf/any.proto";
+
+import "common.proto";
+import "config.proto";
+import "sample.proto";
+import "data.proto";
+import "file.proto";
+
+
 // Packet represents the top level envelope of the protocol.  If we imagine the
 // TCP/IP protocol stack, you can think of this as the IP header.  The actual 
 // payload of the packet is in the payload field.
@@ -26,128 +35,21 @@ message Packet {
 	// is the gateway itself.
 	Address to = 2;
 
-	// This is used when you have request-response semantics.  Use a monotonously
-	// increasing counter and common sense.
-	uint32 id = 3;
+	// Reserve these for now
+	reserved 3,4;
 
-	// Which packet id (if any) is this packet a response to.
-	uint32 response_to = 4;
-
-	// Indicate whether we want the other end to acknowledge reception
-	// of this packet.
-	bool require_ack = 5;
-
-	// The payload is always one of the messages.
+	// The payload is one of the messages.  The semantics for
+	// messages with no payload is yet undefined.
 	oneof payload {
-		Config     config      = 11;
-		PollConfig poll_config = 12;
-		File       file        = 13;
-		Samples    samples     = 14;
-		Sample     sample      = 15;
-		Data       data        = 16;
+		Data       data             =  5;
+		DataAck    data_ack         =  6;
+		Sample     sample           =  7;
+		SampleAck  sample_ack       =  8;
+		Samples    samples          =  9;
+		SamplesAck samples_ack      = 10;
+		Config     config           = 11;
+		ConfigAck  config_ack       = 12;
+		ConfigPoll config_poll      = 13;
+		File       file             = 20;
 	}	
-}
-
-// Address is used to represent an address.  Since we might have to deal
-// with multiple technologies we have to be able to represent different
-// kinds of addresses.  ipv4 and ipv6 are pretty self explanatory.  b32 and 
-// b64 is just a generic 32 and 64 bit addresses respectively.  These can be 
-// used to represent non-IP addresses of different kinds or even node IDs.
-//
-// If the address refers to a node ID the gateway may have to maintain a
-// mapping between the node ID and whatever network address the local
-// network uses.  Keep in mind that the address is supposed to allow the
-// server end to route messages to a given device (or, if the address is
-// the boolean broadcast, all devices reachable from the gateway)
-message Address {
-	// network address
-	oneof addr {
-		// IPv4 address
-		fixed32 ipv4 = 5;
-		// IPv6 address
-		bytes   ipv6 = 6;
-		// Generic 32 bit address
-		fixed32 b32  = 7;
-		// Generic 64 bit address
-		fixed64 b64  = 8;
-		// String address
-		string name = 9;
-		// Indicate that the address is equivalent to a broadcast
-		bool broadcast = 10; 
-	}
-}
-
-// Value is a generic value that can be of various types.
-message Value {
-	oneof value {
-		uint64 uint64_val = 4;
-		uint32 uint32_val = 5;
-		int64  int64_val  = 6;
-		int32  int32_val  = 7;
-		float  float_val  = 8;
-		string string_val = 9;
-		bytes  bytes_val  = 10;
-	}
-}
-
-// A sample is a single sensor value from a given node.
-message Sample {
-	Address from      = 1;
-	uint64  timestamp = 2;
-	uint32  type      = 3;
-	Value   value     = 4;
-}
-
-// Samples is a collection of samples that may or may not come from different devices.  
-// This message is typically sent upstream from the gateway and contains an aggregate 
-// of samples from multiple devices.
-message Samples {
-	repeated Sample samples = 1;
-}
-
-// Config contains configuration data.
-message Config {
-	map<string,Value> config  = 1;
-}
-
-// Ask the device to send its configuration.  Optionally include a
-// list of field names you want to ask for.
-message PollConfig {
-	// The fields we wish to get the value of.  If this array is empty it means
-	// "send all fields"
-	repeated string fields = 1;
-}
-
-// File contains a file or file fragment.
-message File {
-	// File name
-	string name     = 1;
-	// Type is specific to the application
-	uint32 type     = 2;
-	// Version is specific to the application
-	uint32 version  = 3;
-	// Offset is used
-	uint32 offset    = 4;
-	// If the entire file is sent in one go, this is 0.
-	uint32 part_num  = 5;
-	// How many parts the file is divided into
-	uint32 num_parts = 6;
-	// Payload data
-	bytes  data      = 7;
-	// Optional checksum, which is application specific
-	bytes  checksum  = 8;
-	
-}
-
-// Data is a generic data message.  type and id are application specific.
-message Data {
-	uint32 type = 1;
-	uint32 id   = 2;
-	bytes  data = 3;
-}
-
-// Ack is just a generic acknowledgement which can optionally contain a status.  The
-// status value is application depenent.
-message Ack {
-	uint32 status = 1;
 }
