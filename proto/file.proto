@@ -36,7 +36,7 @@ message FileTransferStart {
 	uint32 session_serial = 2;
 
 	// Number of chunks we divide the file into
-	uint32 numChunks = 3;
+	uint32 num_chunks = 3;
 
 	// Windowing parameters.  We still need to figure this out.  Especially
 	// if we are going to support dynamic windowing (and possibly MTU discovery)

@@ -4,8 +4,6 @@ package gwpb;
 option go_package = "pkg/gwpb";
 option optimize_for = LITE_RUNTIME;
 
-import "common.proto";
-
 // Data is a generic data message for unstructured byte data.  If you
 // are reporting measurements you want to use the Sample message type
 // instead since it provides some type safety.  It also enables writing
