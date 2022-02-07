@@ -10,11 +10,11 @@ package gwpb.v1;
 
 option go_package = "gwpb.v1";
 
-import "common.proto";
-import "config.proto";
-import "sample.proto";
-import "data.proto";
-import "file.proto";
+import "gwpb/v1/common.proto";
+import "gwpb/v1/config.proto";
+import "gwpb/v1/sample.proto";
+import "gwpb/v1/data.proto";
+import "gwpb/v1/file.proto";
 
 
 // Packet represents the top level envelope of the protocol.  If we imagine the

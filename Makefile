@@ -9,7 +9,7 @@ gen: clean
 	@buf generate
 
 clean:
-	@rm -rf gen
+	@rm -rf pkg
 
 breaking:
 	@buf breaking --against "https://github.com/borud/chat/archive/main.zip#strip_components=1"
