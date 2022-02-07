@@ -3,7 +3,6 @@ package gwpb.v1;
 
 option go_package = "gwpb.v1";
 
-
 // Data is a generic data message for unstructured byte data.  If you
 // are reporting measurements you want to use the Sample message type
 // instead since it provides some type safety.  It also enables writing
