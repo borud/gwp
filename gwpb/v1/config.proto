@@ -1,0 +1,35 @@
+syntax = "proto3";
+package gwpb.v1;
+
+option go_package = "gwpb.v1";
+
+import "gwpb/v1/common.proto";
+
+// Config contains configuration data.
+message Config {
+	// The serial number of the config.  This can be omitted, but if you want 
+	// an acknowledgement you have to set it so the ack can refer
+	// refer to which config message it is acknowledging.
+	int32 serial       = 1;
+
+	// If this is set to true it signals that the recipient must
+	// send an acknowledgement upon reception.
+	bool  want_ack = 2;
+
+	// A map from string to value of configuration parameters.
+	map<string,Value> config  = 3;
+}
+
+// Acknowledge a configuration message.
+message ConfigAck {
+	// The serial number of the config message we are acknowledging.
+	int32 serial = 1;
+}
+
+// Ask the device to send its configuration.  Optionally include a
+// list of field names you want to ask for.
+message ConfigPoll {
+	// The fields we wish to get the value of.  If this array is empty it means
+	// "send all fields"
+	repeated string fields = 1;
+}

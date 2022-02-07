@@ -1,0 +1,32 @@
+syntax = "proto3";
+package gwpb.v1;
+
+option go_package = "gwpb.v1";
+
+
+// Data is a generic data message for unstructured byte data.  If you
+// are reporting measurements you want to use the Sample message type
+// instead since it provides some type safety.  It also enables writing
+// more generic middleware and server functionality rather without
+// requiring application knowledge to seep into the code unnecessarily.
+message Data {
+	// type is an application dependent type identifier.
+	uint32 type = 1;
+
+	// A byte array of data you want to send.
+	bytes  data = 3;
+
+	// The serial number of the message.  This has to be set if you
+	// want acknowledgements.
+	uint32 serial = 4;
+
+	// If set to true it asks the recipient to acknowledge the message
+	// using the serial number.
+	bool want_ack = 5;
+}
+
+// Data acknowledgement message.
+message DataAck {
+	// The serial number of the data message we are acknowledging.
+	int32 serial = 1;
+}

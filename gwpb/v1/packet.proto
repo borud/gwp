@@ -1,0 +1,67 @@
+// Gateway protocol
+//
+// This is a prototype for gateway protocols that isn't specific to any one project right
+// now.  We try to keep the protocol as minimal as possible.  The goal is to make something
+// that is easy to understand and implement.  Due to different constraints on different
+// platforms, for some platforms it may only be feasible to support a subset of features.
+
+syntax = "proto3";
+package gwpb.v1;
+
+option go_package = "gwpb.v1";
+
+import "gwpb/v1/common.proto";
+import "gwpb/v1/config.proto";
+import "gwpb/v1/sample.proto";
+import "gwpb/v1/data.proto";
+import "gwpb/v1/file.proto";
+
+
+// Packet represents the top level envelope of the protocol.  If we imagine the
+// TCP/IP protocol stack, you can think of this as the IP header.  The actual 
+// payload of the packet is in the payload field.
+//
+message Packet {
+	// Which device the packet is from.  If the address is unset, the packet is from
+	// the gateway and not directly from a device.  For instance if the gateway 
+	// aggregates data from multiple devices and sends these in a packet, an unset
+	// from address is appropriate as the packet is from the gateway.
+	Address from = 1;
+
+	// Which device the packet is to.  If the address is unset the addressee
+	// is the gateway itself.
+	Address to = 2;
+
+	// Reserve these for now
+	reserved 3,4;
+
+	// The payload is one of the messages.  The semantics for
+	// messages with no payload is yet undefined.
+	oneof payload {
+		// Data messages
+		Data       data             =  5;
+		DataAck    data_ack         =  6;
+
+		// Sample messages
+		Sample     sample           =  7;
+		SampleAck  sample_ack       =  8;
+		Samples    samples          =  9;
+		SamplesAck samples_ack      = 10;
+
+		// Config messages
+		Config     config           = 11;
+		ConfigAck  config_ack       = 12;
+		ConfigPoll config_poll      = 13;
+
+		// File messages
+		FileTransferStart       file_transfer_start       = 20;
+		FileChunk               file_chunk                = 21;
+		FileChunkAck            file_chunk_ack            = 22;
+		FileTransferTermination file_transfer_termination = 23;
+		FileChunksMissing       file_chunks_missing       = 24;
+		DirRequest              dir_request               = 25;
+		DirResponse             dir_response              =	26;
+		DeleteRequest           delete_request            = 27;
+		DeleteResponse          delete_response           = 28;
+	}	
+}
