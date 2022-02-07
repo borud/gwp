@@ -12,10 +12,10 @@ clean:
 	@rm -rf pkg
 
 breaking:
-	@buf breaking --against "https://github.com/borud/chat/archive/main.zip#strip_components=1"
+	@buf breaking --against "https://github.com/borud/gwp/archive/main.zip#strip_components=1"
 
 
-publish:
+publish: breaking
 	@buf push
 
 dep:

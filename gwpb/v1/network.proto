@@ -1,0 +1,24 @@
+syntax = "proto3";
+package gwpb.v1;
+option go_package = "gwpb.v1";
+
+enum NetworkType {
+	NETWORK_TYPE_UNSPECIFIED  = 0;
+	NETWORK_TYPE_FRUITYMESH = 1;
+	NETWORK_TYPE_OPENTHREAD = 2;
+	NETWORK_TYPE_WIFI_AP    = 3;
+}
+
+// Network represents an instance of a network adapter.
+message Network {
+	uint64 id = 1;
+	string name = 2;
+	NetworkType type = 3;
+	bool active = 4;
+}
+
+message ListNetworksRequest {}
+
+message ListNetworksResponse {
+	repeated Network networks = 1;
+}

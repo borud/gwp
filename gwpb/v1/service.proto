@@ -1,0 +1,14 @@
+syntax = "proto3";
+package gwpb.v1;
+option go_package = "gwpb.v1";
+
+import "google/api/annotations.proto";
+import "gwpb/v1/network.proto";
+
+service GatewayService {
+	rpc ListNetworks(ListNetworksRequest) returns (ListNetworksResponse) {
+        option (google.api.http) = {
+            get : "/api/v1/networks"
+        };
+    };
+}
