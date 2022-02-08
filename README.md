@@ -9,8 +9,10 @@ In order to use the types defined in this module you only have to include
 the following in your Go program.
 
 ```go
-import gwp "go.buf.build/grpc/go/borud/gwp/gwpb/v1"
+import gw "go.buf.build/borud/grpc-gateway4/borud/gwp/gwpb/v1"
 ```
+
+...and run "go mod tidy".
 
 This will use the buf.build proxy and serve you a ready-made library with the generated code.
 
